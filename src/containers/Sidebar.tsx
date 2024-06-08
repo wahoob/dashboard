@@ -23,16 +23,13 @@ const Sidebar = () => {
 
     return (
         <>
-            {/* {isScreenSmall && isSidebarOpen && (
-                <div
-                    onClick={() => close()}
-                    className="lg:hidden fixed inset-0 z-[99999] bg-neutral-800 opacity-50"
-                />
-            )} */}
+            {isScreenSmall && isSidebarOpen && (
+                <div onClick={() => close()} className="lg:hidden fixed inset-0 z-[99999] bg-neutral-800 opacity-50" />
+            )}
             <aside
-                className={`lg:sticky absolute top-0 overflow-y-auto px-6 bg-zinc-100 scrollbar-hidden h-full flex flex-col border-r transition-all duration-300 w-60 ${
+                className={`lg:sticky absolute top-0 overflow-y-auto px-6 bg-zinc-100 scrollbar-hidden flex flex-col border-r transition-all duration-300 w-60 ${
                     isSidebarOpen ? "left-0" : "-left-full"
-                } ${isScreenSmall ? "z-[99999]" : "z-[99]"} ${!isScreenSmall && !isSidebarOpen && "hidden"}`}
+                } ${isScreenSmall ? "z-[99999] h-screen" : "z-[99] h-full"} ${!isScreenSmall && !isSidebarOpen && "hidden"}`}
                 ref={sidebarRef}
             >
                 {isScreenSmall && (

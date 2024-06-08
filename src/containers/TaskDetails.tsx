@@ -85,202 +85,208 @@ const TaskDetails = () => {
         setNoteInput(noteInputValue)
     }, [noteInputValue, currentTaskId])
     return (
-        <div
-            className={`bg-zinc-100 grow lg:sticky lg:top-4 lg:h-[calc(100vh-7.5rem)] px-3 overflow-y-auto overflow-x-hidden scrollbar-hidden flex flex-col justify-between absolute right-0 top-[4.2rem] ${
-                isTaskDetailsSidebarOpen ? "max-w-72" : "max-w-0 lg:hidden opacity-0"
-            } z-[997] h-[calc(100vh-4.2rem)] text-nowrap`}
-            style={{ transition: `max-width 0.5s, ${!isTaskDetailsSidebarOpen && "opacity 0s ease 0.3s"}` }}
-            ref={taskDetailsRef}
-        >
-            <div>
-                <div className="py-4 flex items-center justify-between sticky top-0 bg-zinc-100 z-[995]">
-                    <h1 className="text-lg font-semibold">Task Details</h1>
-                    <div className="hover:bg-zinc-300 p-1.5 rounded-sm shrink-0" onClick={() => closeTaskDetailsSidebar()}>
-                        <RxCross1 />
+        <>
+            <div
+                onClick={() => closeTaskDetailsSidebar()}
+                className={`lg:hidden fixed inset-0 z-[998] bg-neutral-800 opacity-50 ${!isTaskDetailsSidebarOpen && "hidden"}`}
+            />
+            <div
+                className={`bg-zinc-100 grow lg:sticky lg:top-4 lg:h-[calc(100vh-7.5rem)] px-3 overflow-y-auto overflow-x-hidden scrollbar-hidden flex flex-col justify-between absolute right-0 top-[4.3rem] ${
+                    isTaskDetailsSidebarOpen ? "max-w-72" : "max-w-0 lg:hidden opacity-0"
+                } z-[998] h-[calc(100vh-4.3rem)] text-nowrap rounded-l`}
+                style={{ transition: `max-width 0.5s, ${!isTaskDetailsSidebarOpen && "opacity 0s ease 0.3s"}` }}
+                ref={taskDetailsRef}
+            >
+                <div>
+                    <div className="py-4 flex items-center justify-between sticky top-0 bg-zinc-100 z-[995]">
+                        <h1 className="text-lg font-semibold">Task Details</h1>
+                        <div className="hover:bg-zinc-300 p-1.5 rounded-sm shrink-0" onClick={() => closeTaskDetailsSidebar()}>
+                            <RxCross1 />
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                        {/* task name and steps */}
+                        <div className="bg-zinc-200 rounded px-2 py-3 text-neutral-800">
+                            {/* task name */}
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2.5">
+                                    <CustomCheckbutton
+                                        checked={isCompleted}
+                                        listId={taskListId}
+                                        taskId={taskId}
+                                        toggleTaskChecked={toggleTaskStatus}
+                                        size={20}
+                                    />
+                                    <div className="flex items-center gap-1">
+                                        <h1 className="text-lg font-medium text-wrap break-all line-clamp-1">{text}</h1>
+                                        <TbEdit className="cursor-pointer shrink-0" onClick={() => handleEditClick(text, "task")} />
+                                    </div>
+                                </div>
+                                <CustomStar task={currentTask} />
+                            </div>
+                            {/* task steps */}
+                            <div className="mt-2">
+                                <div className="flex flex-col gap-1">
+                                    {steps.map((step) => {
+                                        const { stepId, text, isCompleted } = step
+                                        return <Step key={stepId} stepId={stepId} text={text} isCompleted={isCompleted} />
+                                    })}
+                                </div>
+                                <form className="flex items-center gap-2.5 pl-0.5 pr-2 text-sm pt-2.5" onSubmit={handleSubmit}>
+                                    {isFocused ? (
+                                        <FaRegCircle className="size-5 text-orange-600 shrink-0" style={{ color: currentListColor }} />
+                                    ) : (
+                                        <FiPlus className="size-5 text-orange-600 shrink-0" style={{ color: currentListColor }} />
+                                    )}
+                                    <input
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        className={`flex-1 bg-transparent outline-0 ${isDayList && "placeholder:text-[#8795A0]"} ${
+                                            isImportantList && "placeholder:text-[#E8ACB8]"
+                                        } ${isPlannedList && "placeholder:text-[#9AD2BA]"} ${isTasksList && "placeholder:text-[#788CDE]"} ${
+                                            !(isTasksList || isDayList || isImportantList || isPlannedList) && "placeholder:text-orange-600"
+                                        }`}
+                                        placeholder={placeholder}
+                                        onFocus={() => {
+                                            setPlaceholder("")
+                                            setIsFocused(true)
+                                        }}
+                                        onBlur={() => {
+                                            setPlaceholder("Next step")
+                                            setIsFocused(false)
+                                        }}
+                                    />
+                                </form>
+                            </div>
+                        </div>
+                        {/* add task to my day */}
+                        <div className="bg-zinc-200 text-sm font-medium rounded cursor-default text-neutral-700 flex items-center">
+                            <div
+                                className={`flex items-center gap-2 flex-1 py-3 px-2 rounded ${!isToday && "hover:bg-zinc-300"}`}
+                                onClick={() => {
+                                    !isToday && addTask(undefined, "my-day-list", undefined, currentTask)
+                                }}
+                            >
+                                <LuSun className="size-5" style={{ color: currentListColor }} />
+                                <p style={{ color: currentListColor }}>Add to My Day</p>
+                            </div>
+                            {isToday && (
+                                <div
+                                    className="px-4 py-3 rounded hover:bg-zinc-300"
+                                    onClick={() => {
+                                        toggleMainTask(taskId, taskListId, "isToday")
+                                    }}
+                                >
+                                    <RxCross1 />
+                                </div>
+                            )}
+                        </div>
+                        {/* add due date */}
+                        <div
+                            className={`flex items-center bg-zinc-200 text-sm font-medium rounded cursor-default text-neutral-700 relative ${
+                                !dueDate && "hover:bg-zinc-300"
+                            }`}
+                            ref={dueDatesRef}
+                        >
+                            <div
+                                className="flex-1 flex items-center gap-2 py-3 px-2 hover:bg-zinc-300 rounded"
+                                onClick={() => {
+                                    setIsDueDateOpen(!isDueDateOpen)
+                                }}
+                            >
+                                <MdCalendarMonth className="size-5" style={{ color: currentListColor }} />
+                                <p style={{ color: currentListColor }}>{dueDate ? `Due ${dueDateText()}` : "Add due date"}</p>
+                            </div>
+                            {dueDate && (
+                                <div
+                                    className="px-4 py-3 rounded hover:bg-zinc-300"
+                                    onClick={() => {
+                                        toggleMainTask(taskId, taskListId, "isPlanned")
+                                        deleteDueDate()
+                                    }}
+                                >
+                                    <RxCross1 />
+                                </div>
+                            )}
+                            {/* dates */}
+                            <div
+                                className={`absolute z-[998] top-full left-1/2 -translate-x-1/2 bg-neutral-800 text-white rounded text-[13px] font-normal w-56 ${
+                                    !isDueDateOpen && "hidden"
+                                }`}
+                            >
+                                {dueDateData.map((dueDate, idx) => {
+                                    const { Icon, day, text } = dueDate
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className="flex items-center justify-between hover:bg-neutral-950 cursor-default py-2.5 px-2"
+                                            onClick={() => {
+                                                editDueDate(day)
+                                                setIsDueDateOpen(false)
+                                            }}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Icon className="size-4" />
+                                                <p>{text}</p>
+                                            </div>
+                                            <p>{day.format("ddd")}</p>
+                                        </div>
+                                    )
+                                })}
+                                <div
+                                    className="hover:bg-neutral-950 cursor-default py-2.5 px-2 border-t border-t-neutral-500"
+                                    onClick={() => {
+                                        setIsDueDateOpen(false)
+                                        setIsDatePickerOpen(true)
+                                    }}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <FaRegCalendarAlt className="size-4" />
+                                        <p>Pick a date</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* date picker */}
+                            <div
+                                className={`absolute top-1/2 -translate-y-[10%] left-1/2 -translate-x-1/2 z-[998] bg-neutral-800 rounded p-4 text-zinc-300 text-xs cursor-default ${
+                                    !isDatePickerOpen && "hidden"
+                                }`}
+                            >
+                                <DatePicker changeDate={editDueDate} setDatePicker={setIsDatePickerOpen} />
+                            </div>
+                        </div>
+                        {/* show note */}
+                        <form
+                            className="bg-zinc-200 pt-3 pb-8 px-2 text-sm rounded"
+                            onSubmit={(e) => {
+                                e.preventDefault()
+                                saveNote()
+                            }}
+                        >
+                            <input
+                                className="w-full bg-transparent outline-0"
+                                placeholder="Add Note"
+                                value={noteInput}
+                                onChange={(e) => setNoteInput(e.target.value)}
+                                onBlur={() => saveNote()}
+                            />
+                        </form>
                     </div>
                 </div>
-                <div className="flex flex-col gap-4">
-                    {/* task name and steps */}
-                    <div className="bg-zinc-200 rounded px-2 py-3 text-neutral-800">
-                        {/* task name */}
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2.5">
-                                <CustomCheckbutton
-                                    checked={isCompleted}
-                                    listId={taskListId}
-                                    taskId={taskId}
-                                    toggleTaskChecked={toggleTaskStatus}
-                                    size={20}
-                                />
-                                <div className="flex items-center gap-1">
-                                    <h1 className="text-lg font-medium text-wrap break-all line-clamp-1">{text}</h1>
-                                    <TbEdit className="cursor-pointer shrink-0" onClick={() => handleEditClick(text, "task")} />
-                                </div>
-                            </div>
-                            <CustomStar task={currentTask} />
-                        </div>
-                        {/* task steps */}
-                        <div className="mt-2">
-                            <div className="flex flex-col gap-1">
-                                {steps.map((step) => {
-                                    const { stepId, text, isCompleted } = step
-                                    return <Step key={stepId} stepId={stepId} text={text} isCompleted={isCompleted} />
-                                })}
-                            </div>
-                            <form className="flex items-center gap-2.5 pl-0.5 pr-2 text-sm pt-2.5" onSubmit={handleSubmit}>
-                                {isFocused ? (
-                                    <FaRegCircle className="size-5 text-orange-600 shrink-0" style={{ color: currentListColor }} />
-                                ) : (
-                                    <FiPlus className="size-5 text-orange-600 shrink-0" style={{ color: currentListColor }} />
-                                )}
-                                <input
-                                    value={inputValue}
-                                    onChange={(e) => setInputValue(e.target.value)}
-                                    className={`flex-1 bg-transparent outline-0 ${isDayList && "placeholder:text-[#8795A0]"} ${
-                                        isImportantList && "placeholder:text-[#E8ACB8]"
-                                    } ${isPlannedList && "placeholder:text-[#9AD2BA]"} ${isTasksList && "placeholder:text-[#788CDE]"} ${
-                                        !(isTasksList || isDayList || isImportantList || isPlannedList) && "placeholder:text-orange-600"
-                                    }`}
-                                    placeholder={placeholder}
-                                    onFocus={() => {
-                                        setPlaceholder("")
-                                        setIsFocused(true)
-                                    }}
-                                    onBlur={() => {
-                                        setPlaceholder("Next step")
-                                        setIsFocused(false)
-                                    }}
-                                />
-                            </form>
-                        </div>
-                    </div>
-                    {/* add task to my day */}
-                    <div className="bg-zinc-200 text-sm font-medium rounded cursor-default text-neutral-700 flex items-center">
-                        <div
-                            className={`flex items-center gap-2 flex-1 py-3 px-2 rounded ${!isToday && "hover:bg-zinc-300"}`}
-                            onClick={() => {
-                                !isToday && addTask(undefined, "my-day-list", undefined, currentTask)
-                            }}
-                        >
-                            <LuSun className="size-5" style={{ color: currentListColor }} />
-                            <p style={{ color: currentListColor }}>Add to My Day</p>
-                        </div>
-                        {isToday && (
-                            <div
-                                className="px-4 py-3 rounded hover:bg-zinc-300"
-                                onClick={() => {
-                                    toggleMainTask(taskId, taskListId, "isToday")
-                                }}
-                            >
-                                <RxCross1 />
-                            </div>
-                        )}
-                    </div>
-                    {/* add due date */}
+                {/* task details footer */}
+                <div className="flex items-center justify-between text-neutral-700 border-t border-t-neutral-300 bg-zinc-100 sticky bottom-0">
+                    <p className="flex-1 text-center text-sm font-medium">Created on {currentTask.createdDay}</p>
                     <div
-                        className={`flex items-center bg-zinc-200 text-sm font-medium rounded cursor-default text-neutral-700 relative ${
-                            !dueDate && "hover:bg-zinc-300"
-                        }`}
-                        ref={dueDatesRef}
-                    >
-                        <div
-                            className="flex-1 flex items-center gap-2 py-3 px-2 hover:bg-zinc-300 rounded"
-                            onClick={() => {
-                                setIsDueDateOpen(!isDueDateOpen)
-                            }}
-                        >
-                            <MdCalendarMonth className="size-5" style={{ color: currentListColor }} />
-                            <p style={{ color: currentListColor }}>{dueDate ? `Due ${dueDateText()}` : "Add due date"}</p>
-                        </div>
-                        {dueDate && (
-                            <div
-                                className="px-4 py-3 rounded hover:bg-zinc-300"
-                                onClick={() => {
-                                    toggleMainTask(taskId, taskListId, "isPlanned")
-                                    deleteDueDate()
-                                }}
-                            >
-                                <RxCross1 />
-                            </div>
-                        )}
-                        {/* dates */}
-                        <div
-                            className={`absolute z-[998] top-full left-1/2 -translate-x-1/2 bg-neutral-800 text-white rounded text-[13px] font-normal w-56 ${
-                                !isDueDateOpen && "hidden"
-                            }`}
-                        >
-                            {dueDateData.map((dueDate, idx) => {
-                                const { Icon, day, text } = dueDate
-                                return (
-                                    <div
-                                        key={idx}
-                                        className="flex items-center justify-between hover:bg-neutral-950 cursor-default py-2.5 px-2"
-                                        onClick={() => {
-                                            editDueDate(day)
-                                            setIsDueDateOpen(false)
-                                        }}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Icon className="size-4" />
-                                            <p>{text}</p>
-                                        </div>
-                                        <p>{day.format("ddd")}</p>
-                                    </div>
-                                )
-                            })}
-                            <div
-                                className="hover:bg-neutral-950 cursor-default py-2.5 px-2 border-t border-t-neutral-500"
-                                onClick={() => {
-                                    setIsDueDateOpen(false)
-                                    setIsDatePickerOpen(true)
-                                }}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <FaRegCalendarAlt className="size-4" />
-                                    <p>Pick a date</p>
-                                </div>
-                            </div>
-                        </div>
-                        {/* date picker */}
-                        <div
-                            className={`absolute top-1/2 -translate-y-[10%] left-1/2 -translate-x-1/2 z-[998] bg-neutral-800 rounded p-4 text-zinc-300 text-xs cursor-default ${
-                                !isDatePickerOpen && "hidden"
-                            }`}
-                        >
-                            <DatePicker changeDate={editDueDate} setDatePicker={setIsDatePickerOpen} />
-                        </div>
-                    </div>
-                    {/* show note */}
-                    <form
-                        className="bg-zinc-200 pt-3 pb-8 px-2 text-sm rounded"
-                        onSubmit={(e) => {
-                            e.preventDefault()
-                            saveNote()
+                        className="hover:bg-zinc-300 p-3 rounded"
+                        onClick={() => {
+                            deleteTask()
                         }}
                     >
-                        <input
-                            className="w-full bg-transparent outline-0"
-                            placeholder="Add Note"
-                            value={noteInput}
-                            onChange={(e) => setNoteInput(e.target.value)}
-                            onBlur={() => saveNote()}
-                        />
-                    </form>
+                        <FaRegTrashAlt />
+                    </div>
                 </div>
             </div>
-            {/* task details footer */}
-            <div className="flex items-center justify-between text-neutral-700 border-t border-t-neutral-300 bg-zinc-100 sticky bottom-0">
-                <p className="flex-1 text-center text-sm font-medium">Created on {currentTask.createdDay}</p>
-                <div
-                    className="hover:bg-zinc-300 p-3 rounded"
-                    onClick={() => {
-                        deleteTask()
-                    }}
-                >
-                    <FaRegTrashAlt />
-                </div>
-            </div>
-        </div>
+        </>
     )
 }
 

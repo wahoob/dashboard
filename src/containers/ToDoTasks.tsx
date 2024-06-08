@@ -13,7 +13,7 @@ type ToDoTasksProps = {
 const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
     const { currentList, isDayList, isImportantList, isPlannedList, openSuggestionbar, isSearching, searchTasks, updatedTaskRanking } =
         useContext(ToDoContext)
-    const { Icon: CurrentListIcon, color: currentListColor, count } = currentList
+    const { Icon: CurrentListIcon, color: currentListColor, tasks } = currentList
     const [isCompletedOpen, setIsCompletedOpen] = useState(true)
     const [containerBottom, setContainerBottom] = useState<number>(0)
     const [activeTaskItem, setActiveTaskItem] = useState<string | null>(null)
@@ -29,9 +29,14 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
 
     useEffect(() => {
         if (containerRef.current) {
-            setContainerBottom(containerRef.current?.getBoundingClientRect().bottom)
+            const isScreenSmall = window.innerWidth < 640
+            if (isScreenSmall) {
+                setContainerBottom(containerRef.current?.getBoundingClientRect().bottom - 150)
+            } else {
+                setContainerBottom(containerRef.current?.getBoundingClientRect().bottom - 105)
+            }
         }
-    }, [count])
+    }, [tasks, currentList])
 
     return (
         <div className={`flex-1 flex flex-col relative px-4 lg:px-12 w-full ${isSearching && "justify-between"}`}>
@@ -128,7 +133,7 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
                     <div
                         className="max-h-full h-full absolute w-full -z-0 lined-bg"
                         style={{
-                            top: `${containerBottom - 100}px`,
+                            top: `${containerBottom}px`,
                         }}
                     />
                 )}

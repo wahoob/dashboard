@@ -1,5 +1,6 @@
 import { useContext } from "react"
 import { ToDoContext } from "../context/toDoContext"
+import { bell } from "../assets"
 
 type CustomCheckbuttonProps = {
     checked: boolean
@@ -27,6 +28,10 @@ const CustomCheckbutton = ({ checked, toggleTaskChecked, toggleStepChecked, list
             onClick={(e) => {
                 e.stopPropagation()
                 stepId ? toggleStepChecked!(stepId) : toggleTaskChecked!(listId!, taskId!)
+                if (!checked) {
+                    const audio = new Audio(bell)
+                    audio.play()
+                }
             }}
         >
             <div
