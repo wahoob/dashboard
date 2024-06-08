@@ -1,0 +1,5 @@
+export { default as email1 } from "./email1.webp"
+export { default as email2 } from "./email2.webp"
+export { default as email3 } from "./email3.webp"
+export { default as email4 } from "./email4.webp"
+export { default as email5 } from "./email5.webp"

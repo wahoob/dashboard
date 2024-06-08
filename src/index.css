@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* * {
+    scrollbar-width: thin;
+} */
+
+*::-webkit-scrollbar {
+    width: 0.55vw;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #606060;
+    border-radius: 9999px;
+}
+
+.scrollbar-hidden::-webkit-scrollbar-thumb {
+    background-color: transparent;
+}
+
+.scrollbar-hidden:hover::-webkit-scrollbar-thumb {
+    background-color: #909090;
+}
+
+.lined-bg {
+    background-image: linear-gradient(#e3e3e4 0.1em, transparent 0.1em);
+    background-size: 100% 50px;
+}
