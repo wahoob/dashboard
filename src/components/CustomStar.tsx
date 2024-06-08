@@ -27,7 +27,7 @@ const CustomStar = ({ task }: CustomStarProps) => {
     }
     return (
         <div
-            className={`transition-colors h-7 flex items-center justify-center hover:opacity-70 ${isDayList && "hover:text-[#8795A0]"} ${
+            className={`transition-colors h-7 flex items-center justify-center hover:opacity-70 z-10 ${isDayList && "hover:text-[#8795A0]"} ${
                 isImportantList && "hover:text-[#E8ACB8]"
             } ${isPlannedList && "hover:text-[#9AD2BA]"} ${isTasksList && "hover:text-[#788CDE]"} ${
                 !(isTasksList || isDayList || isImportantList || isPlannedList) && "hover:text-orange-600 text-orange-600"

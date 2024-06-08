@@ -44,7 +44,7 @@ const Task = ({ task, setActiveTaskItem, dragable = false }: TaskComponentProps)
         <div
             className={`flex items-center justify-between gap-3 text-neutral-700 bg-zinc-200 px-3.5 ${
                 steps.length > 0 || dueDate || taskListId !== currentListId || isToday || isSearching ? "py-1" : "py-2.5"
-            } rounded-md z-10 hover:bg-zinc-300 cursor-default active:opacity-60 active:border active:border-neutral-400`}
+            } rounded-md hover:bg-zinc-300 cursor-default active:opacity-60 active:border active:border-neutral-400`}
             onClick={() => {
                 viewTaskDetails(taskId)
                 openTaskDetailsSidebar()
@@ -53,7 +53,7 @@ const Task = ({ task, setActiveTaskItem, dragable = false }: TaskComponentProps)
             onDragStart={() => setActiveTaskItem!(taskId)}
             onDragEnd={() => setActiveTaskItem!(null)}
         >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 z-10">
                 <CustomCheckbutton checked={isCompleted} toggleTaskChecked={toggleTaskStatus} listId={taskListId} taskId={taskId} size={20} />
                 <div className="flex flex-col text-base">
                     <div className={`${isCompleted && "line-through text-gray-500"}`}>{text}</div>
