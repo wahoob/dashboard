@@ -12,7 +12,7 @@ type TaskComponentProps = {
     dragable?: boolean
     setActiveTaskItem?: (value: string | null) => void
 }
-const Task = ({ task, setActiveTaskItem, dragable = false }: TaskComponentProps) => {
+const Task = ({ task }: TaskComponentProps) => {
     const { text, isCompleted, taskId, steps, taskListId, dueDate, isToday } = task
     const {
         toggleTaskStatus,
@@ -41,17 +41,17 @@ const Task = ({ task, setActiveTaskItem, dragable = false }: TaskComponentProps)
     }
 
     return (
+        //  active:opacity-60 active:border active:border-neutral-400
         <div
             className={`flex items-center justify-between gap-3 text-neutral-700 bg-zinc-200 px-3.5 ${
                 steps.length > 0 || dueDate || taskListId !== currentListId || isToday || isSearching ? "py-1" : "py-2.5"
-            } rounded-md hover:bg-zinc-300 cursor-default active:opacity-60 active:border active:border-neutral-400`}
+            } rounded-md hover:bg-zinc-300 cursor-default`}
             onClick={() => {
                 viewTaskDetails(taskId)
                 openTaskDetailsSidebar()
             }}
-            draggable={dragable}
-            onDragStart={() => setActiveTaskItem!(taskId)}
-            onDragEnd={() => setActiveTaskItem!(null)}
+            // onDragStart={() => setActiveTaskItem!(taskId)}
+            // onDragEnd={() => setActiveTaskItem!(null)}
         >
             <div className="flex items-center gap-3 z-10">
                 <CustomCheckbutton checked={isCompleted} toggleTaskChecked={toggleTaskStatus} listId={taskListId} taskId={taskId} size={20} />

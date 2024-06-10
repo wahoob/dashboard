@@ -36,7 +36,7 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
                 setContainerBottom(containerRef.current?.getBoundingClientRect().bottom - 105)
             }
         }
-    }, [tasks, currentList])
+    }, [tasks, isCompletedOpen])
 
     return (
         <div className={`flex-1 flex flex-col relative px-4 lg:px-12 w-full ${isSearching && "justify-between"}`}>
@@ -92,48 +92,50 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
                 }`}
             >
                 <DropArea index={0} onDrop={onTaskDrop} size={3.5} />
-                {/* uncompleted tasks */}
-                <div className="flex flex-col gap-0.5" ref={containerRef}>
-                    {currentList.tasks.map((task, index) => {
-                        const { taskId, isCompleted } = task
-                        if (!isCompleted) {
-                            return (
-                                <div key={taskId}>
-                                    <Task task={task} setActiveTaskItem={setActiveTaskItem} />
-                                    <DropArea index={index + 1} onDrop={onTaskDrop} size={3.5} />
-                                </div>
-                            )
-                        }
-                    })}
-                </div>
-                {/* completed tasks */}
-                <div className="mt-1 flex flex-col gap-0.5">
-                    {currentList.tasks.some((task) => task.isCompleted === true) && (
-                        <div
-                            className="flex items-center gap-2 px-2 py-1 bg-[#eeeeef] hover:bg-[#e2e2e3] w-fit rounded mb-1 cursor-default text-neutral-600"
-                            onClick={() => setIsCompletedOpen(!isCompletedOpen)}
-                        >
-                            <FaChevronRight className={`size-3 transition-transform ${isCompletedOpen && "rotate-90"}`} />
-                            <div className="flex gap-2 items-center font-medium">
-                                <p>Completed</p>
-                                <p className="text-sm">{completedTasks}</p>
-                            </div>
-                        </div>
-                    )}
-                    {isCompletedOpen &&
-                        currentList.tasks.map((task) => {
+                <div ref={containerRef}>
+                    {/* uncompleted tasks */}
+                    <div className="flex flex-col gap-0.5">
+                        {currentList.tasks.map((task, index) => {
                             const { taskId, isCompleted } = task
-                            if (isCompleted) {
-                                return <Task key={taskId} task={task} />
+                            if (!isCompleted) {
+                                return (
+                                    <div key={taskId}>
+                                        <Task task={task} setActiveTaskItem={setActiveTaskItem} />
+                                        <DropArea index={index + 1} onDrop={onTaskDrop} size={3.5} />
+                                    </div>
+                                )
                             }
                         })}
+                    </div>
+                    {/* completed tasks */}
+                    <div className="mt-1 flex flex-col gap-0.5">
+                        {currentList.tasks.some((task) => task.isCompleted === true) && (
+                            <div
+                                className="flex items-center gap-2 px-2 py-1 bg-[#eeeeef] hover:bg-[#e2e2e3] w-fit rounded mb-1 cursor-default text-neutral-600"
+                                onClick={() => setIsCompletedOpen(!isCompletedOpen)}
+                            >
+                                <FaChevronRight className={`size-3 transition-transform ${isCompletedOpen && "rotate-90"}`} />
+                                <div className="flex gap-2 items-center font-medium">
+                                    <p>Completed</p>
+                                    <p className="text-sm">{completedTasks}</p>
+                                </div>
+                            </div>
+                        )}
+                        {isCompletedOpen &&
+                            currentList.tasks.map((task) => {
+                                const { taskId, isCompleted } = task
+                                if (isCompleted) {
+                                    return <Task key={taskId} task={task} />
+                                }
+                            })}
+                    </div>
                 </div>
                 {/* show the lined background */}
-                {!((isDayList || isImportantList || isPlannedList) && currentList.tasks.length === 0) && containerBottom <= window.innerHeight && (
+                {!((isDayList || isImportantList || isPlannedList) && currentList.tasks.length === 0) && (
                     <div
-                        className="max-h-full h-full absolute w-full -z-0 lined-bg"
+                        className={`max-h-full h-full absolute w-full -z-0 lined-bg ${containerBottom + 250 >= window.innerHeight && "hidden"}`}
                         style={{
-                            top: `${containerBottom}px`,
+                            top: `${isCompletedOpen ? containerBottom : containerBottom - 30}px`,
                         }}
                     />
                 )}
