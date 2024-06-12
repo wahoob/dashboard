@@ -4,7 +4,7 @@ import { FcIdea } from "react-icons/fc"
 import { GiNotebook } from "react-icons/gi"
 import { Task, ToDoInput } from "../components"
 import { SlMenu } from "react-icons/sl"
-import { ElementType, useContext, useEffect, useRef, useState } from "react"
+import { ElementType, useContext, useLayoutEffect, useRef, useState } from "react"
 import { ToDoContext } from "../context/toDoContext"
 import { DndContext, DragEndEvent, DragStartEvent, PointerSensor, TouchSensor, closestCorners, useSensor, useSensors } from "@dnd-kit/core"
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable"
@@ -54,7 +54,7 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
     }
 
     // change the position of lined background
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (containerRef.current) {
             const isScreenSmall = window.innerWidth < 640
             if (isScreenSmall) {
