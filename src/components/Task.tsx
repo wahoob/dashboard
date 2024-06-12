@@ -6,14 +6,14 @@ import { GoSun } from "react-icons/go"
 import { TiTick } from "react-icons/ti"
 import { FaRegCalendarAlt } from "react-icons/fa"
 import CustomStar from "./CustomStar"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 type TaskComponentProps = {
     task: TaskProps
-    dragable?: boolean
-    setActiveTaskItem?: (value: string | null) => void
 }
 const Task = ({ task }: TaskComponentProps) => {
-    const { text, isCompleted, taskId, steps, taskListId, dueDate, isToday } = task
+    const { text, isCompleted, id, steps, taskListId, dueDate, isToday } = task
     const {
         toggleTaskStatus,
         openTaskDetailsSidebar,
@@ -40,21 +40,29 @@ const Task = ({ task }: TaskComponentProps) => {
         }`
     }
 
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+
+    const style = {
+        transition,
+        transform: CSS.Transform.toString(transform),
+    }
+
     return (
-        //  active:opacity-60 active:border active:border-neutral-400
         <div
             className={`flex items-center justify-between gap-3 text-neutral-700 bg-zinc-200 px-3.5 ${
                 steps.length > 0 || dueDate || taskListId !== currentListId || isToday || isSearching ? "py-1" : "py-2.5"
-            } rounded-md hover:bg-zinc-300 cursor-default`}
+            } rounded-md hover:bg-zinc-300 cursor-default touch-none`}
             onClick={() => {
-                viewTaskDetails(taskId)
+                viewTaskDetails(id)
                 openTaskDetailsSidebar()
             }}
-            // onDragStart={() => setActiveTaskItem!(taskId)}
-            // onDragEnd={() => setActiveTaskItem!(null)}
+            ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+            style={style}
         >
-            <div className="flex items-center gap-3 z-10">
-                <CustomCheckbutton checked={isCompleted} toggleTaskChecked={toggleTaskStatus} listId={taskListId} taskId={taskId} size={20} />
+            <div className="flex items-center gap-3">
+                <CustomCheckbutton checked={isCompleted} toggleTaskChecked={toggleTaskStatus} listId={taskListId} taskId={id} size={20} />
                 <div className="flex flex-col text-base">
                     <div className={`${isCompleted && "line-through text-gray-500"}`}>{text}</div>
                     <div className="flex items-center gap-3 text-xs text-neutral-600 font-medium">

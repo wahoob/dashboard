@@ -2,31 +2,58 @@ import { FaChevronRight } from "react-icons/fa"
 import { currentDay } from "../utils"
 import { FcIdea } from "react-icons/fc"
 import { GiNotebook } from "react-icons/gi"
-import { DropArea, Task, ToDoInput } from "../components"
+import { Task, ToDoInput } from "../components"
 import { SlMenu } from "react-icons/sl"
 import { ElementType, useContext, useEffect, useRef, useState } from "react"
 import { ToDoContext } from "../context/toDoContext"
+import { DndContext, DragEndEvent, DragStartEvent, PointerSensor, TouchSensor, closestCorners, useSensor, useSensors } from "@dnd-kit/core"
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable"
 
 type ToDoTasksProps = {
     setIsToDoSidebarOpen: (value: boolean) => void
 }
 const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
-    const { currentList, isDayList, isImportantList, isPlannedList, openSuggestionbar, isSearching, searchTasks, updatedTaskRanking } =
+    const { currentList, isDayList, isImportantList, isPlannedList, openSuggestionbar, isSearching, searchTasks, currentListId, updatedTaskRanking } =
         useContext(ToDoContext)
-    const { Icon: CurrentListIcon, color: currentListColor, tasks } = currentList
+    const { Icon: CurrentListIcon, color: currentListColor, count } = currentList
     const [isCompletedOpen, setIsCompletedOpen] = useState(true)
     const [containerBottom, setContainerBottom] = useState<number>(0)
-    const [activeTaskItem, setActiveTaskItem] = useState<string | null>(null)
+    const [isDragging, setIsDragging] = useState(false)
+    const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null)
     const containerRef = useRef<HTMLDivElement>(null)
 
     const completedTasks = currentList.tasks.filter((task) => task.isCompleted).length
 
-    const onTaskDrop = (position: number) => {
-        if (activeTaskItem) {
-            updatedTaskRanking(activeTaskItem, position)
-        }
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 20,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                distance: 20,
+            },
+        })
+    )
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event
+        setIsDragging(false)
+
+        if (active.id === over!.id) return
+
+        const originalPos = currentList.tasks.findIndex((task) => task.id === active.id)
+        const newPos = currentList.tasks.findIndex((task) => task.id === over!.id)
+        const newTasks = arrayMove(currentList.tasks, originalPos, newPos)
+
+        updatedTaskRanking(newTasks)
+    }
+    const handleDragStart = (event: DragStartEvent) => {
+        setIsDragging(true)
+        setDraggingTaskId(event.active.id.toString())
     }
 
+    // change the position of lined background
     useEffect(() => {
         if (containerRef.current) {
             const isScreenSmall = window.innerWidth < 640
@@ -36,7 +63,7 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
                 setContainerBottom(containerRef.current?.getBoundingClientRect().bottom - 105)
             }
         }
-    }, [tasks, isCompletedOpen])
+    }, [count, isCompletedOpen, currentListId, completedTasks])
 
     return (
         <div className={`flex-1 flex flex-col relative px-4 lg:px-12 w-full ${isSearching && "justify-between"}`}>
@@ -91,27 +118,32 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
                     isSearching && "hidden"
                 }`}
             >
-                <DropArea index={0} onDrop={onTaskDrop} size={3.5} />
                 <div ref={containerRef}>
-                    {/* uncompleted tasks */}
-                    <div className="flex flex-col gap-0.5">
-                        {currentList.tasks.map((task, index) => {
-                            const { taskId, isCompleted } = task
-                            if (!isCompleted) {
-                                return (
-                                    <div key={taskId}>
-                                        <Task task={task} setActiveTaskItem={setActiveTaskItem} />
-                                        <DropArea index={index + 1} onDrop={onTaskDrop} size={3.5} />
-                                    </div>
-                                )
-                            }
-                        })}
-                    </div>
+                    <DndContext sensors={sensors} onDragEnd={handleDragEnd} onDragStart={handleDragStart} collisionDetection={closestCorners}>
+                        {/* uncompleted tasks */}
+                        <div className="flex flex-col gap-0.5 transition-all duration-300">
+                            <SortableContext items={currentList.tasks} strategy={verticalListSortingStrategy}>
+                                {currentList.tasks.map((task) => {
+                                    const { id, isCompleted } = task
+                                    if (!isCompleted) {
+                                        return (
+                                            <div
+                                                key={id}
+                                                className={`transition-all ${isDragging && draggingTaskId !== id && "scale-95 opacity-50"}`}
+                                            >
+                                                <Task task={task} />
+                                            </div>
+                                        )
+                                    }
+                                })}
+                            </SortableContext>
+                        </div>
+                    </DndContext>
                     {/* completed tasks */}
-                    <div className="mt-1 flex flex-col gap-0.5">
+                    <div className={`mt-1 flex flex-col gap-0.5 transition-all ${isDragging && "scale-95 opacity-50"}`}>
                         {currentList.tasks.some((task) => task.isCompleted === true) && (
                             <div
-                                className="flex items-center gap-2 px-2 py-1 bg-[#eeeeef] hover:bg-[#e2e2e3] w-fit rounded mb-1 cursor-default text-neutral-600"
+                                className={`flex items-center gap-2 px-2 py-1 bg-[#eeeeef] hover:bg-[#e2e2e3] w-fit rounded mb-1 cursor-default text-neutral-600`}
                                 onClick={() => setIsCompletedOpen(!isCompletedOpen)}
                             >
                                 <FaChevronRight className={`size-3 transition-transform ${isCompletedOpen && "rotate-90"}`} />
@@ -123,9 +155,9 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
                         )}
                         {isCompletedOpen &&
                             currentList.tasks.map((task) => {
-                                const { taskId, isCompleted } = task
+                                const { id, isCompleted } = task
                                 if (isCompleted) {
-                                    return <Task key={taskId} task={task} />
+                                    return <Task key={id} task={task} />
                                 }
                             })}
                     </div>
@@ -143,7 +175,7 @@ const ToDoTasks = ({ setIsToDoSidebarOpen }: ToDoTasksProps) => {
             {isSearching && (
                 <div className="flex flex-col gap-0.5">
                     {searchTasks.map((task) => (
-                        <Task key={task.taskId} task={task} />
+                        <Task key={task.id} task={task} />
                     ))}
                 </div>
             )}

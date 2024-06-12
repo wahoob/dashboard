@@ -45,7 +45,7 @@ const TasksSuggestion = () => {
                 <div>
                     {lists.slice(3).map((list) =>
                         list.tasks.map((task) => {
-                            const { text, taskListId, isToday, isCompleted, taskId, steps, dueDate, isImportant } = task
+                            const { text, taskListId, isToday, isCompleted, id, steps, dueDate, isImportant } = task
                             const completedSteps = steps.filter((step) => step.isCompleted).length
                             const listName = lists.find((l) => l.id === taskListId)?.name
                             const dueDateText = () => {
@@ -61,13 +61,13 @@ const TasksSuggestion = () => {
                             }
                             if (!(isCompleted || isToday)) {
                                 return (
-                                    <div key={taskId} className="flex items-center justify-between border-b py-1">
+                                    <div key={id} className="flex items-center justify-between border-b py-1">
                                         <div className="flex items-center gap-4">
                                             <CustomCheckbutton
                                                 checked={isCompleted}
                                                 toggleTaskChecked={toggleTaskStatus}
                                                 listId={taskListId}
-                                                taskId={taskId}
+                                                taskId={id}
                                                 size={20}
                                             />
                                             <div>

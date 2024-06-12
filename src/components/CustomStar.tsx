@@ -6,7 +6,7 @@ type CustomStarProps = {
     task: TaskProps
 }
 const CustomStar = ({ task }: CustomStarProps) => {
-    const { taskId, isImportant, taskListId } = task
+    const { id, isImportant, taskListId } = task
     const {
         isDayList,
         isPlannedList,
@@ -20,7 +20,7 @@ const CustomStar = ({ task }: CustomStarProps) => {
     const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
         event.stopPropagation()
         if (isImportant) {
-            toggleMainTask(taskId, taskListId, "isImportant")
+            toggleMainTask(id, taskListId, "isImportant")
         } else {
             addTask(undefined, "important-list", undefined, task)
         }

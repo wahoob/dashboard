@@ -33,7 +33,7 @@ const TaskDetails = () => {
         deleteDueDate,
         editDueDate,
     } = useContext(ToDoContext)
-    const { isCompleted, taskId, text, steps, taskListId, isToday, dueDate } = currentTask
+    const { isCompleted, id, text, steps, taskListId, isToday, dueDate } = currentTask
     const [inputValue, setInputValue] = useState("")
     const [noteInput, setNoteInput] = useState("")
     const [placeholder, setPlaceholder] = useState("Next step")
@@ -113,7 +113,7 @@ const TaskDetails = () => {
                                     <CustomCheckbutton
                                         checked={isCompleted}
                                         listId={taskListId}
-                                        taskId={taskId}
+                                        taskId={id}
                                         toggleTaskChecked={toggleTaskStatus}
                                         size={20}
                                     />
@@ -174,7 +174,7 @@ const TaskDetails = () => {
                                 <div
                                     className="px-4 py-3 rounded hover:bg-zinc-300"
                                     onClick={() => {
-                                        toggleMainTask(taskId, taskListId, "isToday")
+                                        toggleMainTask(id, taskListId, "isToday")
                                     }}
                                 >
                                     <RxCross1 />
@@ -201,7 +201,7 @@ const TaskDetails = () => {
                                 <div
                                     className="px-4 py-3 rounded hover:bg-zinc-300"
                                     onClick={() => {
-                                        toggleMainTask(taskId, taskListId, "isPlanned")
+                                        toggleMainTask(id, taskListId, "isPlanned")
                                         deleteDueDate()
                                     }}
                                 >

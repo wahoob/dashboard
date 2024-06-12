@@ -49,7 +49,7 @@ type ToDoContextProps = {
     toggleSearch: (isSearching: boolean, searchValue?: string) => void
     searchTasks: TaskProps[]
     updateListRanking: (listId: string, position: number) => void
-    updatedTaskRanking: (taskId: string, position: number) => void
+    updatedTaskRanking: (newTasks: TaskProps[]) => void
 }
 
 type TogglePropertyProps = "isImportant" | "isToday" | "isPlanned"
@@ -62,13 +62,13 @@ const iconMap: { [key: string]: ElementType } = {
 }
 
 const initialLists: ListProps[] = [
-    { name: "My Day", tasks: [], count: 0, id: "my-day-list", color: "#8795A0" },
-    { name: "Important", tasks: [], count: 0, id: "important-list", color: "#E8ACB8" },
-    { name: "Planned", tasks: [], count: 0, id: "planned-list", color: "#9AD2BA" },
-    { name: "Tasks", tasks: [], count: 0, id: "tasks-list", color: "#788CDE" },
+    { id: "my-day-list", name: "My Day", tasks: [], count: 0, color: "#8795A0" },
+    { id: "important-list", name: "Important", tasks: [], count: 0, color: "#E8ACB8" },
+    { id: "planned-list", name: "Planned", tasks: [], count: 0, color: "#9AD2BA" },
+    { id: "tasks-list", name: "Tasks", tasks: [], count: 0, color: "#788CDE" },
 ]
 const initialTask: TaskProps = {
-    taskId: "",
+    id: "",
     text: "",
     taskListId: "",
     steps: [],
@@ -146,7 +146,7 @@ export type StepsProps = {
     isCompleted: boolean
 }
 export type TaskProps = {
-    taskId: string
+    id: string
     text: string
     taskListId: string
     steps: StepsProps[]
@@ -159,10 +159,10 @@ export type TaskProps = {
     createdDay: string
 }
 type ListProps = {
+    id: string
     name: string
     tasks: TaskProps[]
     count: number
-    id: string
     Icon?: ElementType
     color?: string
 }
@@ -236,6 +236,7 @@ type ActionProps = {
         searchValue?: string
         isSearching?: boolean
         position?: number
+        newTasks?: TaskProps[]
     }
 }
 function reducer(state: StateProps, { type, payload }: ActionProps) {
@@ -322,7 +323,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
             const newTaskId = uuidv4()
             const { listId, dueDate, text, task } = payload!
             const tempTask: TaskProps = task || {
-                taskId: newTaskId,
+                id: newTaskId,
                 text: text!,
                 taskListId: listId || state.currentListId,
                 steps: [],
@@ -348,7 +349,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
                     (list.id === initialLists[1].id && state.isImportantList) ||
                     (list.id === initialLists[2].id && (state.isPlannedList || tempTask.dueDate))
                 ) {
-                    const exist = list.tasks.some((task) => task.taskId === tempTask.taskId)
+                    const exist = list.tasks.some((task) => task.id === tempTask.id)
                     if (!exist) {
                         return {
                             ...list,
@@ -366,10 +367,10 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
             }
         }
         case "DELETE_TASK": {
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
-                    const updatedTasks = list.tasks.filter((task) => task.taskId !== state.currentTaskId)
+                    const updatedTasks = list.tasks.filter((task) => task.id !== state.currentTaskId)
                     return {
                         ...list,
                         tasks: updatedTasks,
@@ -386,11 +387,11 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         }
         case "EDIT_TASK": {
             const { text } = payload!
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             return {
                                 ...task,
                                 text: text!,
@@ -414,13 +415,11 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         }
         case "EDIT_DUE_DATE": {
             const { dueDate } = payload!
-            const selectedTask = state.lists
-                .find((list) => list.id === state.currentListId)!
-                .tasks.find((task) => task.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((task) => task.id === state.currentTaskId)!
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             return {
                                 ...task,
                                 dueDate: dueDate!,
@@ -443,11 +442,11 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
             }
         }
         case "DELETE_DUE_DATE": {
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             return {
                                 ...task,
                                 dueDate: null,
@@ -471,7 +470,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
                     return {
                         ...list,
                         tasks: list.tasks.map((task) => {
-                            if (task.taskId === taskId) {
+                            if (task.id === taskId) {
                                 return {
                                     ...task,
                                     isCompleted: !task.isCompleted,
@@ -491,7 +490,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         }
         case "VIEW_TASK_DETAILS": {
             const { taskId } = payload!
-            const tempTaskNote = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((task) => task.taskId === taskId)!.note
+            const tempTaskNote = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((task) => task.id === taskId)!.note
             return {
                 ...state,
                 currentTaskId: taskId!,
@@ -501,7 +500,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         case "ADD_STEP": {
             const newStepId = uuidv4()
             const { text } = payload!
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             const tempStep: StepsProps = {
                 stepId: newStepId,
                 text: text!,
@@ -510,7 +509,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             return {
                                 ...task,
                                 steps: [...task.steps, tempStep],
@@ -533,11 +532,11 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         }
         case "TOGGLE_STEP_STATUS": {
             const { stepId } = payload!
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             const updatedSteps = task.steps.map((step) => {
                                 if (step.stepId === stepId) {
                                     return {
@@ -569,11 +568,11 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         }
         case "DELETE_STEP": {
             const { stepId } = payload!
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             const updatedSteps = task.steps.filter((step) => step.stepId !== stepId)
                             return {
                                 ...task,
@@ -597,17 +596,17 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         }
         case "PROMOTE_STEP_TO_TASK": {
             const { stepId } = payload!
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             let newTask: TaskProps
             state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             task.steps.map((step) => {
                                 if (step.stepId === stepId) {
                                     const { isCompleted, text } = step
                                     newTask = {
-                                        taskId: stepId,
+                                        id: stepId,
                                         text: text,
                                         taskListId: selectedTask.taskListId,
                                         steps: [],
@@ -642,11 +641,11 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
         }
         case "EDIT_NOTE": {
             const { text } = payload!
-            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.taskId === state.currentTaskId)!
+            const selectedTask = state.lists.find((list) => list.id === state.currentListId)!.tasks.find((t) => t.id === state.currentTaskId)!
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === selectedTask.taskListId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === state.currentTaskId) {
+                        if (task.id === state.currentTaskId) {
                             return {
                                 ...task,
                                 note: text!,
@@ -672,7 +671,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
             const updatedLists: ListProps[] = state.lists.map((list) => {
                 if (list.id === listId) {
                     const updatedTasks = list.tasks.map((task) => {
-                        if (task.taskId === taskId) {
+                        if (task.id === taskId) {
                             return {
                                 ...task,
                                 [toggleProperty!]: !task[toggleProperty!],
@@ -704,7 +703,7 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
                         .map((task) => {
                             const correspondingTaskIndex = state.lists.findIndex((l) => l.id === task.taskListId)
                             if (correspondingTaskIndex !== -1) {
-                                const correspondingTask = state.lists[correspondingTaskIndex].tasks.find((t) => t.taskId === task.taskId)
+                                const correspondingTask = state.lists[correspondingTaskIndex].tasks.find((t) => t.id === task.id)
                                 if (correspondingTask && correspondingTask[property] === task[property]) {
                                     return correspondingTask
                                 }
@@ -753,17 +752,13 @@ function reducer(state: StateProps, { type, payload }: ActionProps) {
             }
         }
         case "UPDATE_TASK_RANKING": {
-            const { taskId, position } = payload!
-            const taskIndex = state.lists.find((list) => list.id === state.currentListId)!.tasks.findIndex((task) => task.taskId === taskId)
+            const { newTasks } = payload!
 
-            const updatedLists: ListProps[] = state.lists.map((list) => {
+            const updatedLists = state.lists.map((list) => {
                 if (list.id === state.currentListId) {
-                    const updatedTasks = list.tasks
-                    const [taskToMove] = updatedTasks.splice(taskIndex, 1)
-                    updatedTasks.splice(position!, 0, taskToMove)
                     return {
                         ...list,
-                        tasks: updatedTasks,
+                        tasks: newTasks!,
                     }
                 }
                 return list
@@ -826,7 +821,7 @@ export const ToDoProvide = ({ children }: ToDoProviderProps) => {
     // edit task's due date
     function editDueDate(dueDate: Dayjs) {
         dispatch({ type: "EDIT_DUE_DATE", payload: { dueDate } })
-        const currentTask = state.lists.find((l) => l.id === state.currentListId)?.tasks.find((t) => t.taskId === state.currentTaskId)
+        const currentTask = state.lists.find((l) => l.id === state.currentListId)?.tasks.find((t) => t.id === state.currentTaskId)
         addTask(undefined, "planned-list", undefined, currentTask)
     }
     // delete task's due date
@@ -875,12 +870,12 @@ export const ToDoProvide = ({ children }: ToDoProviderProps) => {
         },
         [dispatch]
     )
-    // update list ranking
+    // update list and task ranking
     const updateListRanking = (listId: string, position: number) => {
         dispatch({ type: "UPDATE_LIST_RANKING", payload: { listId, position } })
     }
-    const updatedTaskRanking = (taskId: string, position: number) => {
-        dispatch({ type: "UPDATE_TASK_RANKING", payload: { taskId, position } })
+    const updatedTaskRanking = (newTasks: TaskProps[]) => {
+        dispatch({ type: "UPDATE_TASK_RANKING", payload: { newTasks } })
     }
 
     // update current list every time (currnet list id) or (lists) get updated
@@ -892,7 +887,7 @@ export const ToDoProvide = ({ children }: ToDoProviderProps) => {
     // update current task every time (current list id) or (current list) get updated
     useLayoutEffect(() => {
         const id = state.currentTaskId
-        const selectedTask = currentList.tasks.find((task) => task.taskId === id)
+        const selectedTask = currentList.tasks.find((task) => task.id === id)
         selectedTask && setCurrentTask(selectedTask)
     }, [currentList, state.currentTaskId])
     // update main lists on every change
